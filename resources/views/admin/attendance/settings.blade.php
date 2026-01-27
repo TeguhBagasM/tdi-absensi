@@ -63,56 +63,8 @@
                 </div>
 
                 <!-- Geofence Settings -->
-                <div class="accordion-item">
-                    <h2 class="accordion-header">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#geofenceSettings">
-                            <i class="fas fa-map-marker-alt me-2"></i> Pengaturan Geofence
-                        </button>
-                    </h2>
-                    <div id="geofenceSettings" class="accordion-collapse collapse" data-bs-parent="#settingsAccordion">
-                        <div class="accordion-body">
-                            <!-- Office Latitude -->
-                            <div class="mb-3">
-                                <label class="form-label">
-                                    <i class="fas fa-latitude me-2"></i> Latitude Kantor
-                                </label>
-                                <input type="number" id="office_latitude" step="0.0000001" class="form-control" value="{{ $settings['office_latitude'] ?? '-6.9248406' }}">
-                                <small class="text-muted">Garis lintang lokasi kantor</small>
-                            </div>
+                <!-- Moved to .env configuration - office location is fixed -->
 
-                            <!-- Office Longitude -->
-                            <div class="mb-3">
-                                <label class="form-label">
-                                    <i class="fas fa-longitude me-2"></i> Longitude Kantor
-                                </label>
-                                <input type="number" id="office_longitude" step="0.0000001" class="form-control" value="{{ $settings['office_longitude'] ?? '107.6586951' }}">
-                                <small class="text-muted">Garis bujur lokasi kantor</small>
-                            </div>
-
-                            <!-- Geofence Radius -->
-                            <div class="mb-3">
-                                <label class="form-label">
-                                    <i class="fas fa-circle me-2"></i> Radius Geofence (meter)
-                                </label>
-                                <input type="number" id="geofence_radius_meters" min="10" step="10" class="form-control" value="{{ $settings['geofence_radius_meters'] ?? '400' }}">
-                                <small class="text-muted">Jarak maksimum dalam meter untuk check-in di kantor</small>
-                            </div>
-
-                            <div class="alert alert-info" role="alert">
-                                <i class="fas fa-info-circle me-2"></i>
-                                <strong>Informasi:</strong> Lokasi kantor saat ini:
-                                <br/>
-                                <code>{{ $settings['office_latitude'] ?? '-6.9248406' }}, {{ $settings['office_longitude'] ?? '107.6586951' }}</code>
-                                <br/>
-                                Radius: <code>{{ $settings['geofence_radius_meters'] ?? '400' }} m</code>
-                            </div>
-
-                            <button type="button" class="btn btn-primary btn-sm" onclick="saveSetting('office_latitude', 'decimal')">
-                                <i class="fas fa-save me-1"></i> Simpan Pengaturan Geofence
-                            </button>
-                        </div>
-                    </div>
-                </div>
 
                 <!-- WFH Settings -->
                 <div class="accordion-item">
@@ -159,10 +111,6 @@
                                         <td>{{ $todayAttendance ?? 0 }}</td>
                                     </tr>
                                     <tr>
-                                        <td><strong>Persetujuan Menunggu:</strong></td>
-                                        <td><span class="badge bg-warning">{{ $pendingApprovals ?? 0 }}</span></td>
-                                    </tr>
-                                    <tr>
                                         <td><strong>Terakhir Diupdate:</strong></td>
                                         <td>{{ now()->format('d/m/Y H:i:s') }}</td>
                                     </tr>
@@ -205,9 +153,9 @@
                     </h5>
                     <ul class="small mb-0">
                         <li>Update pengaturan akan langsung berlaku untuk semua pengguna</li>
-                        <li>Geofence radius minimum 10 meter</li>
-                        <li>Format waktu menggunakan format 24 jam</li>
-                        <li>Perubahan disimpan secara otomatis ke cache sistem</li>
+                        <li>Format waktu menggunakan format 24 jam (HH:mm)</li>
+                        <li>Perubahan disimpan secara otomatis ke database</li>
+                        <li>Max WFH per minggu: 0-7 hari</li>
                     </ul>
                 </div>
             </div>
@@ -270,88 +218,6 @@
                 Swal.fire({
                     title: 'Error!',
                     text: data.message || 'Terjadi kesalahan.',
-                    icon: 'error'
-                });
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            Swal.fire({
-                title: 'Error!',
-                text: 'Terjadi kesalahan saat menyimpan pengaturan.',
-                icon: 'error'
-            });
-        });
-    }
-
-    function saveGeofenceSettings() {
-        // Collect all geofence settings
-        const settings = {
-            office_latitude: document.getElementById('office_latitude').value,
-            office_longitude: document.getElementById('office_longitude').value,
-            geofence_radius_meters: document.getElementById('geofence_radius_meters').value
-        };
-
-        Swal.fire({
-            title: 'Menyimpan...',
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
-            }
-        });
-
-        // Send all three settings
-        Promise.all([
-            fetch('{{ route('admin.attendance.settings.update') }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                },
-                body: JSON.stringify({
-                    setting_key: 'office_latitude',
-                    setting_value: settings.office_latitude,
-                    data_type: 'decimal'
-                })
-            }),
-            fetch('{{ route('admin.attendance.settings.update') }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                },
-                body: JSON.stringify({
-                    setting_key: 'office_longitude',
-                    setting_value: settings.office_longitude,
-                    data_type: 'decimal'
-                })
-            }),
-            fetch('{{ route('admin.attendance.settings.update') }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                },
-                body: JSON.stringify({
-                    setting_key: 'geofence_radius_meters',
-                    setting_value: settings.geofence_radius_meters,
-                    data_type: 'integer'
-                })
-            })
-        ])
-        .then(responses => Promise.all(responses.map(r => r.json())))
-        .then(data => {
-            if (data.every(d => d.success)) {
-                Swal.fire({
-                    title: 'Berhasil!',
-                    text: 'Pengaturan Geofence telah disimpan.',
-                    icon: 'success',
-                    confirmButtonColor: '#0d6efd'
-                });
-            } else {
-                Swal.fire({
-                    title: 'Error!',
-                    text: 'Beberapa pengaturan gagal disimpan.',
                     icon: 'error'
                 });
             }

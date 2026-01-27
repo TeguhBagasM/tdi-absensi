@@ -41,14 +41,14 @@
                                             <td>
                                                 <div class="btn-group" role="group">
                                                     <form action="{{ route('users.approve', $user) }}" method="POST" class="d-inline"
-                                                          data-confirm-delete="Setujui pengguna ini?">
+                                                          data-confirm-approve="Setujui pengguna ini?">
                                                         @csrf
                                                         <button type="submit" class="btn btn-sm btn-success">
                                                             <i class="fas fa-check"></i> Setujui
                                                         </button>
                                                     </form>
                                                     <form action="{{ route('users.reject', $user) }}" method="POST" class="d-inline"
-                                                          data-confirm-delete="Tolak dan hapus pengguna {{ $user->full_name ?? $user->name }}?">
+                                                          data-confirm-reject="Tolak dan hapus pengguna {{ $user->full_name ?? $user->name }}?">
                                                         @csrf
                                                         <button type="submit" class="btn btn-sm btn-danger">
                                                             <i class="fas fa-times"></i> Tolak

@@ -123,6 +123,7 @@
 
         // SweetAlert for delete confirmations
         document.addEventListener('DOMContentLoaded', function() {
+            // Handle delete confirmation
             const deleteForms = document.querySelectorAll('form[data-confirm-delete]');
 
             deleteForms.forEach(form => {
@@ -137,6 +138,54 @@
                         confirmButtonColor: '#d33',
                         cancelButtonColor: '#3085d6',
                         confirmButtonText: 'Ya, Hapus!',
+                        cancelButtonText: 'Batal'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            form.submit();
+                        }
+                    });
+                });
+            });
+
+            // Handle approve confirmation
+            const approveForms = document.querySelectorAll('form[data-confirm-approve]');
+
+            approveForms.forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+
+                    Swal.fire({
+                        title: 'Konfirmasi Persetujuan',
+                        text: form.dataset.confirmApprove || 'Setujui pengguna ini?',
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#28a745',
+                        cancelButtonColor: '#6c757d',
+                        confirmButtonText: 'Ya, Setujui!',
+                        cancelButtonText: 'Batal'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            form.submit();
+                        }
+                    });
+                });
+            });
+
+            // Handle reject confirmation
+            const rejectForms = document.querySelectorAll('form[data-confirm-reject]');
+
+            rejectForms.forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+
+                    Swal.fire({
+                        title: 'Konfirmasi Penolakan',
+                        text: form.dataset.confirmReject || 'Tolak pengguna ini?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#dc3545',
+                        cancelButtonColor: '#6c757d',
+                        confirmButtonText: 'Ya, Tolak!',
                         cancelButtonText: 'Batal'
                     }).then((result) => {
                         if (result.isConfirmed) {

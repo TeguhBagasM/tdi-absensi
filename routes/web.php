@@ -4,7 +4,6 @@ use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\DivisionController;
 use App\Http\Controllers\Admin\JobRoleController;
-use App\Http\Controllers\Admin\AttendanceApprovalController;
 use App\Http\Controllers\Admin\AttendanceSettingController;
 use App\Http\Controllers\AttendanceController;
 use Illuminate\Support\Facades\Auth;
@@ -31,12 +30,7 @@ Route::middleware(['isAdmin'])->group(function () {
     Route::resource('admin/divisions', DivisionController::class)->names('divisions')->except(['show', 'create', 'edit']);
     Route::resource('admin/job-roles', JobRoleController::class)->names('job-roles')->except(['show', 'create', 'edit']);
 
-    // Attendance Management (Admin)
-    Route::get('/admin/attendance/approvals', [AttendanceApprovalController::class, 'index'])->name('admin.attendance.approvals');
-    Route::post('/admin/attendance/{record}/approve', [AttendanceApprovalController::class, 'approve'])->name('admin.attendance.approve');
-    Route::post('/admin/attendance/{record}/reject', [AttendanceApprovalController::class, 'reject'])->name('admin.attendance.reject');
-    Route::get('/admin/attendance/pending-count', [AttendanceApprovalController::class, 'getPendingCount'])->name('admin.attendance.pending-count');
-
+    // Attendance Management (Admin) - REMOVED: No approval workflow needed
     // Attendance Settings
     Route::get('/admin/attendance/settings', [AttendanceSettingController::class, 'index'])->name('admin.attendance.settings');
     Route::post('/admin/attendance/settings', [AttendanceSettingController::class, 'update'])->name('admin.attendance.settings.update');
@@ -48,6 +42,7 @@ Route::middleware(['auth', 'peserta_magang'])->group(function () {
     Route::get('/attendance/checkin', [AttendanceController::class, 'checkin'])->name('attendance.checkin');
     Route::post('/attendance/checkin', [AttendanceController::class, 'storeCheckin'])->name('attendance.store-checkin');
     Route::post('/attendance/checkout', [AttendanceController::class, 'storeCheckout'])->name('attendance.store-checkout');
+    Route::post('/attendance/manual-checkout', [AttendanceController::class, 'storeManualCheckout'])->name('attendance.store-manual-checkout');
     Route::get('/attendance/manual', [AttendanceController::class, 'manualCheckin'])->name('attendance.manual');
     Route::post('/attendance/manual', [AttendanceController::class, 'storeManualCheckin'])->name('attendance.store-manual');
     Route::get('/attendance/history', [AttendanceController::class, 'history'])->name('attendance.history');

@@ -56,11 +56,9 @@ class AttendanceService
                 // Telat
                 $data['status'] = 'telat';
                 $data['checkin_reason'] = $reason;
-                $data['approval_status'] = 'pending'; // Butuh approval karena ada alasan
             } else {
                 // Hadir
                 $data['status'] = 'hadir';
-                $data['approval_status'] = 'approved'; // Auto approve
             }
         } else {
             // Check-in dari luar kantor, tidak bisa
@@ -82,8 +80,8 @@ class AttendanceService
         return [
             'success' => true,
             'message' => $data['status'] === 'hadir'
-                ? 'Check-in berhasil! Status: Hadir'
-                : 'Check-in berhasil! Status: Telat (menunggu approval)',
+                ? 'Check-in berhasil! Silakan checkout saat pulang.'
+                : 'Check-in berhasil sebagai telat! Silakan checkout saat pulang.',
             'record' => $record,
         ];
     }
@@ -125,7 +123,8 @@ class AttendanceService
             'status' => $status,
             'checkin_reason' => $reason,
             'file_path' => $filePath,
-            'approval_status' => 'pending', // Manual check-in harus di-approve admin
+            'checkin_time' => now()->format('H:i:s'),
+            // Izin/Sakit/WFH tidak perlu checkout
         ];
 
         $record = AttendanceRecord::updateOrCreate(
@@ -138,13 +137,13 @@ class AttendanceService
 
         return [
             'success' => true,
-            'message' => "Presensi {$status} berhasil dicatat (menunggu approval)",
+            'message' => "Presensi {$status} berhasil dicatat.",
             'record' => $record,
         ];
     }
 
     /**
-     * Perform check-out
+     * Perform check-out (for hadir/telat status)
      */
     public static function checkout($userId)
     {
@@ -168,6 +167,14 @@ class AttendanceService
             ];
         }
 
+        // Hanya status hadir dan telat yang bisa checkout
+        if (!in_array($record->status, ['hadir', 'telat'])) {
+            return [
+                'success' => false,
+                'message' => 'Anda tidak perlu checkout untuk status ' . $record->status,
+            ];
+        }
+
         $record->update([
             'checkout_time' => now()->format('H:i:s'),
         ]);
@@ -175,6 +182,49 @@ class AttendanceService
         return [
             'success' => true,
             'message' => 'Check-out berhasil pada ' . now()->format('H:i'),
+            'record' => $record,
+        ];
+    }
+
+    /**
+     * Perform manual check-out (WFH)
+     */
+    public static function manualCheckout($userId)
+    {
+        $today = today();
+
+        $record = AttendanceRecord::where('user_id', $userId)
+            ->where('attendance_date', $today)
+            ->first();
+
+        if (!$record) {
+            return [
+                'success' => false,
+                'message' => 'Anda belum melakukan check-in hari ini.',
+            ];
+        }
+
+        if ($record->checkout_time) {
+            return [
+                'success' => false,
+                'message' => 'Anda sudah melakukan check-out pada ' . $record->checkout_time->format('H:i'),
+            ];
+        }
+
+        if ($record->status !== 'wfh') {
+            return [
+                'success' => false,
+                'message' => 'Checkout manual hanya untuk status WFH.',
+            ];
+        }
+
+        $record->update([
+            'checkout_time' => now()->format('H:i:s'),
+        ]);
+
+        return [
+            'success' => true,
+            'message' => 'Check-out WFH berhasil pada ' . now()->format('H:i'),
             'record' => $record,
         ];
     }
@@ -206,74 +256,6 @@ class AttendanceService
         return [
             'records' => $records,
             'summary' => $summary,
-        ];
-    }
-
-    /**
-     * Get pending attendance untuk admin approval
-     */
-    public static function getPendingApprovals($userId = null)
-    {
-        $query = AttendanceRecord::where('approval_status', 'pending')
-            ->with('user', 'user.division', 'user.jobRole')
-            ->orderByDesc('attendance_date');
-
-        if ($userId) {
-            $query->where('user_id', $userId);
-        }
-
-        return $query->get();
-    }
-
-    /**
-     * Approve attendance record
-     */
-    public static function approveAttendance($recordId, $approvedBy)
-    {
-        $record = AttendanceRecord::findOrFail($recordId);
-
-        $record->update([
-            'approval_status' => 'approved',
-            'approved_by' => $approvedBy,
-            'approved_at' => now(),
-        ]);
-
-        return [
-            'success' => true,
-            'message' => 'Presensi berhasil disetujui',
-            'record' => $record,
-        ];
-    }
-
-    /**
-     * Reject attendance record
-     */
-    public static function rejectAttendance($recordId, $approvedBy, $reason = null)
-    {
-        $record = AttendanceRecord::findOrFail($recordId);
-
-        $record->update([
-            'approval_status' => 'rejected',
-            'approved_by' => $approvedBy,
-            'approved_at' => now(),
-            'checkin_reason' => $reason,
-        ]);
-
-        // Jika reject karena WFH, decrement WFH count
-        if ($record->status === 'wfh') {
-            $wfhRecord = WfhRecord::where('user_id', $record->user_id)
-                ->where('week_starting', $record->attendance_date->startOfWeek()->toDateString())
-                ->first();
-
-            if ($wfhRecord && $wfhRecord->count > 0) {
-                $wfhRecord->decrement('count');
-            }
-        }
-
-        return [
-            'success' => true,
-            'message' => 'Presensi berhasil ditolak',
-            'record' => $record,
         ];
     }
 }

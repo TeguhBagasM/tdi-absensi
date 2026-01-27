@@ -74,18 +74,7 @@
                                     </span>
                                 @endif
                             </a>
-                            <a href="{{ route('admin.attendance.approvals') }}"
-                               class="nav-link text-white position-relative">
-                                <i class="fas fa-file-check me-2"></i> Persetujuan Presensi
-                                @php
-                                    $attendancePendingCount = \App\Models\AttendanceRecord::where('approval_status', 'pending')->count();
-                                @endphp
-                                @if($attendancePendingCount > 0)
-                                    <span class="position-absolute start-100 top-50 translate-middle badge rounded-pill bg-warning" style="font-size: 0.65rem;">
-                                        {{ $attendancePendingCount }}
-                                    </span>
-                                @endif
-                            </a>
+                            {{-- Persetujuan Presensi - REMOVED: No approval workflow --}}
                         </nav>
                     </div>
                 </div>

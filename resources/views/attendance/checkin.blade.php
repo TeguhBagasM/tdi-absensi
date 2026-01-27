@@ -73,17 +73,27 @@
                     <div id="status-container" class="mt-3"></div>
 
                     <!-- Check-in Button -->
-                    <button type="button" class="btn btn-success w-100 mb-2" id="checkin-btn" onclick="performCheckin()">
+                    <button type="button" class="btn btn-success w-100 mb-2" id="checkin-btn" onclick="performCheckin()"
+                        @if($todayAttendance && $todayAttendance->checkin_time) style="display: none;" @endif>
                         <i class="fas fa-sign-in-alt me-1"></i> Check-in
                     </button>
 
-                    <!-- Check-out Button -->
-                    <button type="button" class="btn btn-warning w-100 mb-2" id="checkout-btn" onclick="performCheckout()" style="display: none;">
+                    <!-- Check-out Button (for hadir/telat) -->
+                    <button type="button" class="btn btn-warning w-100 mb-2" id="checkout-btn" onclick="performCheckout()"
+                        @if(!$todayAttendance || !$todayAttendance->checkin_time || $todayAttendance->checkout_time || !in_array($todayAttendance->status, ['hadir', 'telat'])) style="display: none;" @endif>
                         <i class="fas fa-sign-out-alt me-1"></i> Check-out
                     </button>
 
+                    <!-- Manual Check-out Button (for WFH) -->
+                    <button type="button" class="btn btn-info w-100 mb-2" id="manual-checkout-btn" onclick="performManualCheckout()"
+                        @if(!$todayAttendance || !$todayAttendance->checkin_time || $todayAttendance->checkout_time || $todayAttendance->status !== 'wfh') style="display: none;" @endif>
+                        <i class="fas fa-home me-1"></i> Check-out WFH
+                    </button>
+
                     <!-- Manual Check-in Button -->
-                    <button type="button" class="btn btn-secondary w-100" data-bs-toggle="modal" data-bs-target="#manualCheckinModal">
+                    <button type="button" class="btn btn-secondary w-100"
+                        @if($todayAttendance && $todayAttendance->checkin_time) disabled @endif
+                        data-bs-toggle="modal" data-bs-target="#manualCheckinModal">
                         <i class="fas fa-edit me-1"></i> Manual Check-in
                     </button>
                 </div>
@@ -122,6 +132,13 @@
 
     document.addEventListener('DOMContentLoaded', function() {
         initMap();
+
+        // Show loading status for geolocation
+        const statusContainer = document.getElementById('status-container');
+        if (statusContainer) {
+            statusContainer.innerHTML = '<div class="alert alert-info"><small>📍 Menunggu lokasi GPS...</small></div>';
+        }
+
         updateTodayStatus();
 
         // Auto-update status setiap 10 detik
@@ -157,12 +174,16 @@
             radius: RADIUS
         }).addTo(map);
 
-        // Get user location
+        // Get user location dengan accuracy tinggi dan timeout pendek
         if (navigator.geolocation) {
             navigator.geolocation.watchPosition(
                 position => updateUserLocation(position),
                 error => console.error('Geolocation error:', error),
-                { enableHighAccuracy: true, maximumAge: 5000 }
+                { 
+                    enableHighAccuracy: true,  // Use GPS untuk akurasi maksimal
+                    timeout: 8000,             // Timeout 8 detik (lebih cepat)
+                    maximumAge: 3000           // Cache location selama 3 detik
+                }
             );
         }
     }
@@ -219,9 +240,14 @@
         `;
         document.getElementById('status-container').innerHTML = statusHtml;
 
-        // Update button visibility
-        document.getElementById('checkin-btn').disabled = !isWithin;
-        document.getElementById('checkin-btn').style.opacity = isWithin ? '1' : '0.5';
+        // Update button state - enable/disable based on distance
+        const checkinBtn = document.getElementById('checkin-btn');
+        if (checkinBtn && checkinBtn.style.display !== 'none') {
+            // Only disable button if out of range
+            checkinBtn.disabled = !isWithin;
+            checkinBtn.style.opacity = isWithin ? '1' : '0.5';
+            checkinBtn.style.cursor = isWithin ? 'pointer' : 'not-allowed';
+        }
     }
 
     function performCheckin() {
@@ -234,7 +260,32 @@
             return;
         }
 
+        // Show loading dialog sambil get location
+        Swal.fire({
+            title: 'Sedang Mengambil Lokasi...',
+            html: 'Mohon tunggu beberapa detik',
+            icon: 'info',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        // Get location dengan timeout 10 detik
+        const locationTimeout = setTimeout(() => {
+            Swal.close();
+            Swal.fire({
+                icon: 'error',
+                title: 'Timeout!',
+                text: 'Lokasi tidak terdeteksi. Pastikan GPS aktif dan izin lokasi diberikan.'
+            });
+        }, 10000);
+
         navigator.geolocation.getCurrentPosition(position => {
+            clearTimeout(locationTimeout);
+            Swal.close();
+
             const { latitude, longitude } = position.coords;
             const reason = prompt('Masukkan alasan jika diperlukan:');
 
@@ -278,6 +329,18 @@
                     text: message
                 });
             });
+        }, error => {
+            clearTimeout(locationTimeout);
+            Swal.close();
+            Swal.fire({
+                icon: 'error',
+                title: 'Error Lokasi',
+                text: 'Tidak bisa mengakses lokasi: ' + error.message
+            });
+        }, {
+            enableHighAccuracy: true,
+            timeout: 8000,
+            maximumAge: 0  // Don't use cached location for check-in
         });
     }
 
@@ -319,12 +382,82 @@
         });
     }
 
+    function performManualCheckout() {
+        Swal.fire({
+            title: 'Konfirmasi Check-out WFH',
+            text: 'Apakah Anda sudah selesai bekerja?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, Check-out',
+            cancelButtonText: 'Batal'
+        }).then(result => {
+            if (!result.isConfirmed) return;
+
+            fetch('{{ route("attendance.store-manual-checkout") }}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Sukses!',
+                    text: data.message,
+                    timer: 2000
+                }).then(() => location.reload());
+            })
+            .catch(error => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal!',
+                    text: 'Terjadi kesalahan saat check-out WFH'
+                });
+            });
+        });
+    }
+
     function updateTodayStatus() {
         fetch('{{ route("attendance.today-status") }}')
             .then(response => response.json())
             .then(data => {
+                const checkinBtn = document.getElementById('checkin-btn');
+                const checkoutBtn = document.getElementById('checkout-btn');
+                const manualCheckoutBtn = document.getElementById('manual-checkout-btn');
+
                 if (data.attendance) {
-                    document.getElementById('checkout-btn').style.display = data.has_checkin && !data.has_checkout ? 'block' : 'none';
+                    // Hide check-in button if already checked in
+                    if (data.has_checkin) {
+                        checkinBtn.style.display = 'none';
+                    } else {
+                        checkinBtn.style.display = 'block';
+                    }
+
+                    // Show checkout button for hadir/telat if checked in but not checked out
+                    if (data.has_checkin && !data.has_checkout) {
+                        if (data.attendance.status === 'hadir' || data.attendance.status === 'telat') {
+                            checkoutBtn.style.display = 'block';
+                            manualCheckoutBtn.style.display = 'none';
+                        } else if (data.attendance.status === 'wfh') {
+                            checkoutBtn.style.display = 'none';
+                            manualCheckoutBtn.style.display = 'block';
+                        } else {
+                            // izin/sakit - no checkout needed
+                            checkoutBtn.style.display = 'none';
+                            manualCheckoutBtn.style.display = 'none';
+                        }
+                    } else {
+                        checkoutBtn.style.display = 'none';
+                        manualCheckoutBtn.style.display = 'none';
+                    }
+                } else {
+                    // No attendance today - show check-in button
+                    checkinBtn.style.display = 'block';
+                    checkoutBtn.style.display = 'none';
+                    manualCheckoutBtn.style.display = 'none';
                 }
             });
     }

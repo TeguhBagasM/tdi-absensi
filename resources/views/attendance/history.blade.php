@@ -78,7 +78,6 @@
                                     <th>Jam Pulang</th>
                                     <th>Jarak (m)</th>
                                     <th>Keterangan</th>
-                                    <th>Persetujuan</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -121,25 +120,10 @@
                                             -
                                         @endif
                                     </td>
-                                    <td>
-                                        @if($record->approval_status === 'approved')
-                                            <span class="badge bg-success">
-                                                <i class="fas fa-check me-1"></i> Disetujui
-                                            </span>
-                                        @elseif($record->approval_status === 'rejected')
-                                            <span class="badge bg-danger">
-                                                <i class="fas fa-times me-1"></i> Ditolak
-                                            </span>
-                                        @else
-                                            <span class="badge bg-warning">
-                                                <i class="fas fa-clock me-1"></i> Menunggu
-                                            </span>
-                                        @endif
-                                    </td>
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="7" class="text-center py-4">
+                                    <td colspan="6" class="text-center py-4">
                                         <i class="fas fa-inbox text-muted" style="font-size: 2rem;"></i>
                                         <p class="text-muted mt-2">Tidak ada data presensi untuk bulan ini.</p>
                                     </td>

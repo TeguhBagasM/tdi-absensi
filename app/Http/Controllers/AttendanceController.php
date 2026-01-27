@@ -113,6 +113,20 @@ class AttendanceController extends Controller
     }
 
     /**
+     * Process manual check-out for WFH via AJAX
+     */
+    public function storeManualCheckout(Request $request)
+    {
+        $result = AttendanceService::manualCheckout(auth()->id());
+
+        if ($result['success']) {
+            return response()->json($result, 200);
+        }
+
+        return response()->json($result, 422);
+    }
+
+    /**
      * Show attendance history
      */
     public function history()

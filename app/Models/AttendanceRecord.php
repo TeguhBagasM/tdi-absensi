@@ -21,9 +21,6 @@ class AttendanceRecord extends Model
         'status',
         'checkin_reason',
         'file_path',
-        'approval_status',
-        'approved_by',
-        'approved_at',
     ];
 
     protected $casts = [
@@ -32,17 +29,11 @@ class AttendanceRecord extends Model
         'checkout_time' => 'datetime:H:i:s',
         'checkin_latitude' => 'decimal:8',
         'checkin_longitude' => 'decimal:8',
-        'approved_at' => 'datetime',
     ];
 
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
-    }
-
-    public function approvedBy(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'approved_by');
     }
 
     // Scope untuk mendapatkan attendance hari ini
@@ -55,12 +46,6 @@ class AttendanceRecord extends Model
     public function scopeForUserToday($query, $userId)
     {
         return $query->where('user_id', $userId)->today();
-    }
-
-    // Scope untuk attendance yang pending approval
-    public function scopePending($query)
-    {
-        return $query->where('approval_status', 'pending');
     }
 
     // Scope untuk attendance dalam range tanggal
