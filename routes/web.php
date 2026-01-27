@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\DivisionController;
+use App\Http\Controllers\Admin\JobRoleController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -21,6 +23,10 @@ Route::middleware(['isAdmin'])->group(function () {
     Route::post('/admin/users/{user}/approve', [UserController::class, 'approve'])->name('users.approve');
     Route::post('/admin/users/{user}/reject', [UserController::class, 'reject'])->name('users.reject');
     Route::resource('admin/users', UserController::class)->names('users');
+
+    // Division & Job Role Management
+    Route::resource('admin/divisions', DivisionController::class)->names('divisions')->except(['show', 'create', 'edit']);
+    Route::resource('admin/job-roles', JobRoleController::class)->names('job-roles')->except(['show', 'create', 'edit']);
     // tambahkan route admin lainnya di sini
 });
 
