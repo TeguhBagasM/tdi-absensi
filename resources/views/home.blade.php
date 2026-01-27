@@ -56,8 +56,8 @@
                                 @endphp
                                 <div class="mb-3">
                                     <p class="text-muted mb-1">Status Presensi:</p>
-                                    <h2 class="mb-0">
-                                        <span class="badge bg-{{ $statusColors[$todayAttendance->status] ?? 'secondary' }} p-3">
+                                    <h4 class="mb-0">
+                                        <span class="badge bg-{{ $statusColors[$todayAttendance->status] ?? 'secondary' }} p-2">
                                             <i class="fas fa-{{ $statusIcon[$todayAttendance->status] ?? 'circle' }} me-2"></i>
                                             {{ $statusLabel[$todayAttendance->status] ?? $todayAttendance->status }}
                                         </span>
