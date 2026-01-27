@@ -19,7 +19,7 @@
                         <div class="text-center py-4">Tidak ada user menunggu persetujuan.</div>
                     @else
                         <div class="table-responsive">
-                            <table class="table table-striped table-hover">
+                            <table class="table table-striped table-hover datatable">
                                 <thead class="table-dark">
                                     <tr>
                                         <th>Nama</th>
@@ -60,10 +60,6 @@
                                     @endforeach
                                 </tbody>
                             </table>
-                        </div>
-
-                        <div class="d-flex justify-content-center">
-                            {{ $pendingUsers->links() }}
                         </div>
                     @endif
                 </div>

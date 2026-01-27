@@ -10,7 +10,7 @@ class JobRoleController extends Controller
 {
     public function index()
     {
-        $jobRoles = JobRole::withCount('users')->orderBy('name')->paginate(15);
+        $jobRoles = JobRole::withCount('users')->orderBy('name')->get();
         return view('job-roles.index', compact('jobRoles'));
     }
 

@@ -25,17 +25,25 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.5/dist/sweetalert2.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.5/dist/sweetalert2.all.min.js"></script>
 
+    <!-- DataTables -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+
     <style>
         body {
             background-color: #f8f9fa;
         }
         .main-content {
-            margin-left: 250px;
             min-height: 100vh;
             transition: all 0.3s;
         }
+        .main-content.with-sidebar {
+            margin-left: 250px;
+        }
         @media (max-width: 768px) {
-            .main-content {
+            .main-content.with-sidebar {
                 margin-left: 0;
             }
         }
@@ -47,7 +55,7 @@
             @include('partials.sidebar')
         @endauth
 
-        <div class="main-content flex-grow-1">
+        <div class="main-content flex-grow-1 {{ auth()->check() ? 'with-sidebar' : '' }}">
             @auth
                 @include('partials.topbar')
             @else
@@ -90,6 +98,29 @@
     </div>
 
     <script>
+        // Initialize DataTables
+        $(document).ready(function() {
+            $('.datatable').DataTable({
+                language: {
+                    search: "Cari:",
+                    lengthMenu: "Tampilkan _MENU_ data per halaman",
+                    zeroRecords: "Data tidak ditemukan",
+                    info: "Menampilkan halaman _PAGE_ dari _PAGES_",
+                    infoEmpty: "Tidak ada data tersedia",
+                    infoFiltered: "(difilter dari _MAX_ total data)",
+                    paginate: {
+                        first: "Pertama",
+                        last: "Terakhir",
+                        next: "Selanjutnya",
+                        previous: "Sebelumnya"
+                    }
+                },
+                pageLength: 10,
+                ordering: true,
+                responsive: true
+            });
+        });
+
         // SweetAlert for delete confirmations
         document.addEventListener('DOMContentLoaded', function() {
             const deleteForms = document.querySelectorAll('form[data-confirm-delete]');

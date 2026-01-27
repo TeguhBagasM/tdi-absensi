@@ -10,7 +10,7 @@ class DivisionController extends Controller
 {
     public function index()
     {
-        $divisions = Division::withCount('users')->orderBy('name')->paginate(15);
+        $divisions = Division::withCount('users')->orderBy('name')->get();
         return view('divisions.index', compact('divisions'));
     }
 

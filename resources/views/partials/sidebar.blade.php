@@ -1,4 +1,4 @@
-<div class="sidebar bg-dark text-white d-flex flex-column" id="sidebar">
+<div class="sidebar bg-primary text-white d-flex flex-column" id="sidebar">
     <div class="sidebar-header p-3 border-bottom border-secondary">
         <h4 class="mb-0">
             <i class="fas fa-building"></i> TDI Service
@@ -15,6 +15,14 @@
                 <a href="{{ route('users.index') }}"
                    class="nav-link text-white {{ request()->routeIs('users.*') ? 'active' : '' }}">
                     <i class="fas fa-users me-2"></i> Users
+                </a>
+                <a href="{{ route('divisions.index') }}"
+                   class="nav-link text-white {{ request()->routeIs('divisions.*') ? 'active' : '' }}">
+                    <i class="fas fa-sitemap me-2"></i> Divisions
+                </a>
+                <a href="{{ route('job-roles.index') }}"
+                   class="nav-link text-white {{ request()->routeIs('job-roles.*') ? 'active' : '' }}">
+                    <i class="fas fa-briefcase me-2"></i> Job Roles
                 </a>
                 <a href="#" class="nav-link text-white">
                     <i class="fas fa-calendar-check me-2"></i> Attendance

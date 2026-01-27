@@ -13,7 +13,7 @@ class UserController extends Controller
 {
     public function index()
     {
-        $users = User::with('role')->paginate(10);
+        $users = User::with('role')->get();
         $pendingCount = User::where('is_approved', false)
             ->whereHas('role', fn($q) => $q->where('name', '!=', 'admin'))
             ->count();
@@ -26,7 +26,7 @@ class UserController extends Controller
         $pendingUsers = User::with('role', 'division', 'jobRole')
             ->where('is_approved', false)
             ->whereHas('role', fn($q) => $q->where('name', '!=', 'admin'))
-            ->paginate(10);
+            ->get();
 
         return view('users.approvals', compact('pendingUsers'));
     }

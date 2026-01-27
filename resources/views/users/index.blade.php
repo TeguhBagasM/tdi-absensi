@@ -26,7 +26,7 @@
 
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table class="table table-striped table-hover">
+                        <table class="table table-striped table-hover datatable">
                             <thead class="table-dark">
                                 <tr>
                                     <th>ID</th>
@@ -77,10 +77,6 @@
                                 @endforelse
                             </tbody>
                         </table>
-                    </div>
-
-                    <div class="d-flex justify-content-center">
-                        {{ $users->links() }}
                     </div>
                 </div>
             </div>
