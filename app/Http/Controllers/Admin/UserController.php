@@ -5,16 +5,18 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Role;
 use App\Models\User;
-use Illuminate\Http\Request;
+use App\Http\Requests\Admin\StoreUserRequest;
+use App\Http\Requests\Admin\UpdateUserRequest;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
     public function index()
     {
         $users = User::with('role')->paginate(10);
-        $pendingCount = User::where('is_approved', false)->count();
+        $pendingCount = User::where('is_approved', false)
+            ->whereHas('role', fn($q) => $q->where('name', '!=', 'admin'))
+            ->count();
 
         return view('users.index', compact('users', 'pendingCount'));
     }
@@ -23,6 +25,7 @@ class UserController extends Controller
     {
         $pendingUsers = User::with('role', 'division', 'jobRole')
             ->where('is_approved', false)
+            ->whereHas('role', fn($q) => $q->where('name', '!=', 'admin'))
             ->paginate(10);
 
         return view('users.approvals', compact('pendingUsers'));
@@ -34,32 +37,12 @@ class UserController extends Controller
         return view('users.create', compact('roles'));
     }
 
-    public function store(Request $request)
+    public function store(StoreUserRequest $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
-            'role_id' => 'required|exists:roles,id',
-        ], [
-            'name.required' => 'Nama wajib diisi.',
-            'name.max' => 'Nama maksimal 255 karakter.',
-            'email.required' => 'Email wajib diisi.',
-            'email.email' => 'Format email tidak valid.',
-            'email.unique' => 'Email sudah digunakan.',
-            'password.required' => 'Password wajib diisi.',
-            'password.min' => 'Password minimal 8 karakter.',
-            'password.confirmed' => 'Konfirmasi password tidak cocok.',
-            'role_id.required' => 'Role wajib dipilih.',
-            'role_id.exists' => 'Role yang dipilih tidak valid.',
-        ]);
+        $data = $request->validated();
+        $data['password'] = Hash::make($data['password']);
 
-        User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'role_id' => $request->role_id,
-        ]);
+        User::create($data);
 
         return redirect()->route('users.index')
             ->with('success', 'User berhasil ditambahkan.');
@@ -76,43 +59,17 @@ class UserController extends Controller
         return view('users.edit', compact('user', 'roles'));
     }
 
-    public function update(Request $request, User $user)
+    public function update(UpdateUserRequest $request, User $user)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => [
-                'required',
-                'string',
-                'email',
-                'max:255',
-                Rule::unique('users')->ignore($user->id),
-            ],
-            'password' => 'nullable|string|min:8|confirmed',
-            'role_id' => 'required|exists:roles,id',
-        ], [
-            'name.required' => 'Nama wajib diisi.',
-            'name.max' => 'Nama maksimal 255 karakter.',
-            'email.required' => 'Email wajib diisi.',
-            'email.email' => 'Format email tidak valid.',
-            'email.unique' => 'Email sudah digunakan.',
-            'password.min' => 'Password minimal 8 karakter.',
-            'password.confirmed' => 'Konfirmasi password tidak cocok.',
-            'role_id.required' => 'Role wajib dipilih.',
-            'role_id.exists' => 'Role yang dipilih tidak valid.',
-        ]);
+        $data = $request->validated();
 
-        $userData = [
-            'name' => $request->name,
-            'email' => $request->email,
-            'role_id' => $request->role_id,
-        ];
-
-        // Update password hanya jika diisi
-        if ($request->filled('password')) {
-            $userData['password'] = Hash::make($request->password);
+        if (!empty($data['password'])) {
+            $data['password'] = Hash::make($data['password']);
+        } else {
+            unset($data['password']);
         }
 
-        $user->update($userData);
+        $user->update($data);
 
         return redirect()->route('users.index')
             ->with('success', 'User berhasil diperbarui.');
@@ -126,6 +83,10 @@ class UserController extends Controller
 
     public function approve(User $user)
     {
+        if ($user->role && $user->role->name === 'admin') {
+            return redirect()->back()->with('error', 'Tidak dapat memproses user admin.');
+        }
+
         $user->update(['is_approved' => true]);
 
         return redirect()->back()->with('success', 'User disetujui.');
@@ -133,6 +94,10 @@ class UserController extends Controller
 
     public function reject(User $user)
     {
+        if ($user->role && $user->role->name === 'admin') {
+            return redirect()->back()->with('error', 'Tidak dapat memproses user admin.');
+        }
+
         $user->delete();
 
         return redirect()->back()->with('success', 'User ditolak dan dihapus.');
