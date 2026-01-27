@@ -179,7 +179,7 @@
             navigator.geolocation.watchPosition(
                 position => updateUserLocation(position),
                 error => console.error('Geolocation error:', error),
-                { 
+                {
                     enableHighAccuracy: true,  // Use GPS untuk akurasi maksimal
                     timeout: 8000,             // Timeout 8 detik (lebih cepat)
                     maximumAge: 3000           // Cache location selama 3 detik
@@ -263,7 +263,7 @@
         // Show loading dialog sambil get location
         Swal.fire({
             title: 'Sedang Mengambil Lokasi...',
-            html: 'Mohon tunggu beberapa detik',
+            html: 'Mohon tunggu beberapa detik (GPS mungkin perlu waktu)',
             icon: 'info',
             allowOutsideClick: false,
             allowEscapeKey: false,
@@ -272,75 +272,121 @@
             }
         });
 
-        // Get location dengan timeout 10 detik
+        // Get location dengan timeout 15 detik (lebih lama untuk akurasi)
         const locationTimeout = setTimeout(() => {
             Swal.close();
             Swal.fire({
                 icon: 'error',
                 title: 'Timeout!',
-                text: 'Lokasi tidak terdeteksi. Pastikan GPS aktif dan izin lokasi diberikan.'
+                text: 'Lokasi tidak terdeteksi dalam 15 detik. Pastikan:\n1. GPS/Location aktif\n2. Izin lokasi sudah diberikan\n3. Sinyal GPS cukup kuat'
             });
-        }, 10000);
+        }, 15000);
 
         navigator.geolocation.getCurrentPosition(position => {
             clearTimeout(locationTimeout);
             Swal.close();
 
             const { latitude, longitude } = position.coords;
-            const reason = prompt('Masukkan alasan jika diperlukan:');
 
-            fetch('{{ route("attendance.store-checkin") }}', {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify({
-                    latitude: latitude,
-                    longitude: longitude,
-                    reason: reason
-                })
-            })
-            .then(response => {
-                if (response.status === 422) {
-                    return response.json().then(data => {
-                        throw { type: 'validation', data };
-                    });
-                }
-                return response.json();
-            })
-            .then(data => {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Sukses!',
-                    text: data.message,
-                    timer: 2000
-                }).then(() => location.reload());
-            })
-            .catch(error => {
-                let message = 'Terjadi kesalahan saat check-in';
-                if (error.type === 'validation') {
-                    message = error.data.message || message;
-                }
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Gagal!',
-                    text: message
-                });
-            });
+            // Show modal untuk input alasan (jika telat)
+            openReasonModal(latitude, longitude);
+
         }, error => {
             clearTimeout(locationTimeout);
             Swal.close();
+
+            let errorMsg = 'Tidak bisa mengakses lokasi';
+            if (error.code === error.PERMISSION_DENIED) {
+                errorMsg = 'Izin lokasi ditolak. Aktifkan izin lokasi di settings browser.';
+            } else if (error.code === error.POSITION_UNAVAILABLE) {
+                errorMsg = 'Informasi lokasi tidak tersedia. Coba aktifkan GPS.';
+            } else if (error.code === error.TIMEOUT) {
+                errorMsg = 'Timeout saat mengambil lokasi. Coba lagi.';
+            }
+
             Swal.fire({
                 icon: 'error',
                 title: 'Error Lokasi',
-                text: 'Tidak bisa mengakses lokasi: ' + error.message
+                text: errorMsg
             });
         }, {
             enableHighAccuracy: true,
-            timeout: 8000,
-            maximumAge: 0  // Don't use cached location for check-in
+            timeout: 15000,        // 15 detik timeout
+            maximumAge: 5000       // Bisa cache 5 detik dari watchPosition
+        });
+    }
+
+    function openReasonModal(latitude, longitude) {
+        Swal.fire({
+            title: 'Masukkan Alasan (Jika Telat)',
+            input: 'textarea',
+            inputPlaceholder: 'Alasan keterlambatan (opsional, bisa dikosongkan)',
+            inputAttributes: {
+                'aria-label': 'Alasan keterlambatan',
+                'rows': '4'
+            },
+            showCancelButton: true,
+            confirmButtonText: 'Proses Check-in',
+            cancelButtonText: 'Batal',
+            allowOutsideClick: false
+        }).then((result) => {
+            if (result.isConfirmed || result.isDismissed) {
+                const reason = result.value || null;
+                submitCheckin(latitude, longitude, reason);
+            }
+        });
+    }
+
+    function submitCheckin(latitude, longitude, reason) {
+        Swal.fire({
+            title: 'Memproses Check-in...',
+            icon: 'info',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        fetch('{{ route("attendance.store-checkin") }}', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                latitude: latitude,
+                longitude: longitude,
+                reason: reason
+            })
+        })
+        .then(response => {
+            if (response.status === 422) {
+                return response.json().then(data => {
+                    throw { type: 'validation', data };
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            Swal.fire({
+                icon: 'success',
+                title: 'Sukses!',
+                text: data.message,
+                timer: 2000
+            }).then(() => location.reload());
+        })
+        .catch(error => {
+            let message = 'Terjadi kesalahan saat check-in';
+            if (error.type === 'validation') {
+                message = error.data.message || message;
+            }
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal!',
+                text: message
+            });
         });
     }
 
