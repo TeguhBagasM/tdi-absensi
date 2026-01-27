@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('page-title', 'Tambah User')
+@section('page-title', 'Tambah Pengguna')
 
 @section('content')
 <div class="container-fluid">
@@ -8,7 +8,7 @@
         <div class="col-md-8">
             <div class="card">
                 <div class="card-header">
-                    <h4 class="mb-0">Tambah User Baru</h4>
+                    <h4 class="mb-0">Tambah Pengguna Baru</h4>
                 </div>
 
                 <div class="card-body">
@@ -46,14 +46,14 @@
                         </div>
 
                         <div class="row mb-3">
-                            <label for="role_id" class="col-md-4 col-form-label text-md-end">{{ __('Role') }}</label>
+                            <label for="role_id" class="col-md-4 col-form-label text-md-end">{{ __('Peran') }}</label>
 
                             <div class="col-md-6">
                                 <select name="role_id" id="role_id" class="form-select @error('role_id') is-invalid @enderror" required>
-                                    <option value="">Pilih Role</option>
+                                    <option value="">Pilih Peran</option>
                                     @foreach($roles as $role)
                                         <option value="{{ $role->id }}" {{ old('role_id') == $role->id ? 'selected' : '' }}>
-                                            {{ $role->name }}
+                                            {{ str_replace('_', ' ', $role->name) }}
                                         </option>
                                     @endforeach
                                 </select>
@@ -67,7 +67,7 @@
                         </div>
 
                         <div class="row mb-3">
-                            <label for="password" class="col-md-4 col-form-label text-md-end">{{ __('Password') }}</label>
+                            <label for="password" class="col-md-4 col-form-label text-md-end">{{ __('Kata Sandi') }}</label>
 
                             <div class="col-md-6">
                                 <input id="password" type="password" class="form-control @error('password') is-invalid @enderror"
@@ -82,7 +82,7 @@
                         </div>
 
                         <div class="row mb-3">
-                            <label for="password-confirm" class="col-md-4 col-form-label text-md-end">{{ __('Konfirmasi Password') }}</label>
+                            <label for="password-confirm" class="col-md-4 col-form-label text-md-end">{{ __('Konfirmasi Kata Sandi') }}</label>
 
                             <div class="col-md-6">
                                 <input id="password-confirm" type="password" class="form-control"

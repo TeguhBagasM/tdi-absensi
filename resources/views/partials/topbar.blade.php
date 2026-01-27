@@ -10,22 +10,9 @@
             <span class="text-muted small">{{ now()->format('d M Y') }}</span>
             @auth
                 <span class="badge bg-{{ Auth::user()->isAdmin() ? 'danger' : 'primary' }}">
-                    {{ Auth::user()->role->name ?? 'User' }}
+                    {{ str_replace('_', ' ', Auth::user()->role->name ?? 'User') }}
                 </span>
             @endauth
         </div>
     </div>
 </div>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const sidebarToggle = document.getElementById('sidebarToggle');
-        const sidebar = document.getElementById('sidebar');
-
-        if (sidebarToggle && sidebar) {
-            sidebarToggle.addEventListener('click', function() {
-                sidebar.classList.toggle('show');
-            });
-        }
-    });
-</script>

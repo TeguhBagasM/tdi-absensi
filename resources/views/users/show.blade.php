@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('page-title', 'Detail User')
+@section('page-title', 'Detail Pengguna')
 
 @section('content')
 <div class="container-fluid">
@@ -8,7 +8,7 @@
         <div class="col-md-8">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h4 class="mb-0">Detail User</h4>
+                    <h4 class="mb-0">Detail Pengguna</h4>
                     <div>
                         <a href="{{ route('users.edit', $user) }}" class="btn btn-warning btn-sm">
                             <i class="fas fa-edit"></i> Edit
@@ -36,10 +36,10 @@
                     </div>
 
                     <div class="row mb-3">
-                        <div class="col-md-3"><strong>Role:</strong></div>
+                        <div class="col-md-3"><strong>Peran:</strong></div>
                         <div class="col-md-9">
                             <span class="badge bg-{{ $user->isAdmin() ? 'danger' : 'primary' }} fs-6">
-                                {{ $user->role->name ?? 'No Role' }}
+                                {{ str_replace('_', ' ', $user->role->name ?? 'Tidak ada peran') }}
                             </span>
                         </div>
                     </div>

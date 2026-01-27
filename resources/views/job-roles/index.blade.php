@@ -21,7 +21,7 @@
                                 <tr>
                                     <th width="60">ID</th>
                                     <th>Nama Job Role</th>
-                                    <th width="150" class="text-center">Jumlah User</th>
+                                    <th width="150" class="text-center">Jumlah Pengguna</th>
                                     <th width="180" class="text-center">Aksi</th>
                                 </tr>
                             </thead>
@@ -31,7 +31,7 @@
                                     <td>{{ $jobRole->id }}</td>
                                     <td>{{ $jobRole->name }}</td>
                                     <td class="text-center">
-                                        <span class="badge bg-info">{{ $jobRole->users_count }} user</span>
+                                        <span class="badge bg-info">{{ $jobRole->users_count }} pengguna</span>
                                     </td>
                                     <td class="text-center">
                                         <button type="button" class="btn btn-sm btn-warning"
@@ -58,7 +58,7 @@
                                     title="Edit Job Role"
                                     method="PUT"
                                     action="{{ route('job-roles.update', $jobRole) }}"
-                                    submitText="Update">
+                                    submitText="Perbarui">
                                     <div class="mb-3">
                                         <label for="editName{{ $jobRole->id }}" class="form-label">Nama Job Role</label>
                                         <input type="text"

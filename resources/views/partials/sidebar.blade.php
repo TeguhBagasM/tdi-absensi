@@ -8,35 +8,108 @@
     <nav class="nav flex-column p-3 flex-grow-1">
         @auth
             @if(Auth::user()->isAdmin())
+                <!-- Dashboard -->
                 <a href="{{ route('admin.dashboard') }}"
                    class="nav-link text-white {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
                     <i class="fas fa-gauge me-2"></i> Dashboard
                 </a>
-                <a href="{{ route('users.index') }}"
-                   class="nav-link text-white {{ request()->routeIs('users.*') ? 'active' : '' }}">
-                    <i class="fas fa-users me-2"></i> Users
-                </a>
-                <a href="{{ route('divisions.index') }}"
-                   class="nav-link text-white {{ request()->routeIs('divisions.*') ? 'active' : '' }}">
-                    <i class="fas fa-sitemap me-2"></i> Divisions
-                </a>
-                <a href="{{ route('job-roles.index') }}"
-                   class="nav-link text-white {{ request()->routeIs('job-roles.*') ? 'active' : '' }}">
-                    <i class="fas fa-briefcase me-2"></i> Job Roles
-                </a>
-                <a href="#" class="nav-link text-white">
-                    <i class="fas fa-calendar-check me-2"></i> Attendance
-                </a>
-                <a href="#" class="nav-link text-white">
-                    <i class="fas fa-file-pdf me-2"></i> Reports
-                </a>
+
+                <!-- Master Data Dropdown -->
+                <div class="nav-item dropdown-group">
+                    <a class="nav-link text-white d-flex justify-content-between align-items-center"
+                       data-bs-toggle="collapse"
+                       href="#masterDataMenu"
+                       role="button"
+                       aria-expanded="{{ request()->routeIs('users.*', 'divisions.*', 'job-roles.*') ? 'true' : 'false' }}"
+                       aria-controls="masterDataMenu">
+                        <span>
+                            <i class="fas fa-database me-2"></i> Master Data
+                        </span>
+                        <i class="fas fa-chevron-down ms-auto"></i>
+                    </a>
+                    <div class="collapse {{ request()->routeIs('users.*', 'divisions.*', 'job-roles.*') ? 'show' : '' }}" id="masterDataMenu">
+                        <nav class="nav flex-column ms-3">
+                            <a href="{{ route('users.index') }}"
+                               class="nav-link text-white {{ request()->routeIs('users.*') ? 'active' : '' }}">
+                                <i class="fas fa-users me-2"></i> Manajemen User
+                            </a>
+                            <a href="{{ route('divisions.index') }}"
+                               class="nav-link text-white {{ request()->routeIs('divisions.*') ? 'active' : '' }}">
+                                <i class="fas fa-sitemap me-2"></i> Divisi
+                            </a>
+                            <a href="{{ route('job-roles.index') }}"
+                               class="nav-link text-white {{ request()->routeIs('job-roles.*') ? 'active' : '' }}">
+                                <i class="fas fa-briefcase me-2"></i> Job Role
+                            </a>
+                        </nav>
+                    </div>
+                </div>
+
+                <!-- Persetujuan Dropdown -->
+                <div class="nav-item dropdown-group">
+                    <a class="nav-link text-white d-flex justify-content-between align-items-center position-relative"
+                       data-bs-toggle="collapse"
+                       href="#approvalMenu"
+                       role="button"
+                       aria-expanded="false"
+                       aria-controls="approvalMenu">
+                        <span>
+                            <i class="fas fa-check-circle me-2"></i> Persetujuan
+                            @if(isset($pendingCount) && $pendingCount > 0)
+                                <span class="position-absolute start-0 top-50 translate-middle-y badge rounded-pill bg-danger ms-1" style="font-size: 0.65rem;">
+                                    {{ $pendingCount }}
+                                </span>
+                            @endif
+                        </span>
+                        <i class="fas fa-chevron-down ms-auto"></i>
+                    </a>
+                    <div class="collapse" id="approvalMenu">
+                        <nav class="nav flex-column ms-3">
+                            <a href="{{ route('users.approvals') }}"
+                               class="nav-link text-white position-relative">
+                                <i class="fas fa-user-check me-2"></i> Persetujuan User
+                                @if(isset($pendingCount) && $pendingCount > 0)
+                                    <span class="position-absolute start-100 top-50 translate-middle badge rounded-pill bg-danger" style="font-size: 0.65rem;">
+                                        {{ $pendingCount }}
+                                    </span>
+                                @endif
+                            </a>
+                        </nav>
+                    </div>
+                </div>
+
+                <!-- Lainnya Dropdown -->
+                <div class="nav-item dropdown-group">
+                    <a class="nav-link text-white d-flex justify-content-between align-items-center"
+                       data-bs-toggle="collapse"
+                       href="#otherMenu"
+                       role="button"
+                       aria-expanded="false"
+                       aria-controls="otherMenu">
+                        <span>
+                            <i class="fas fa-cogs me-2"></i> Lainnya
+                        </span>
+                        <i class="fas fa-chevron-down ms-auto"></i>
+                    </a>
+                    <div class="collapse" id="otherMenu">
+                        <nav class="nav flex-column ms-3">
+                            <a href="#" class="nav-link text-white">
+                                <i class="fas fa-calendar-check me-2"></i> Kehadiran
+                            </a>
+                            <a href="#" class="nav-link text-white">
+                                <i class="fas fa-file-pdf me-2"></i> Laporan
+                            </a>
+                        </nav>
+                    </div>
+                </div>
             @else
+                <!-- User Menu -->
                 <a href="{{ route('home') }}"
                    class="nav-link text-white {{ request()->routeIs('home') ? 'active' : '' }}">
-                    <i class="fas fa-home me-2"></i> Home
+                    <i class="fas fa-home me-2"></i> Beranda
                 </a>
                 <a href="#" class="nav-link text-white">
-                    <i class="fas fa-calendar-check me-2"></i> My Attendance
+                    <i class="fas fa-calendar-check me-2"></i> Kehadiran Saya
                 </a>
             @endif
         @endauth
@@ -51,13 +124,13 @@
                     <span>{{ Auth::user()->name }}</span>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-dark text-small shadow" aria-labelledby="dropdownUser">
-                    <li><a class="dropdown-item" href="#"><i class="fas fa-user me-2"></i> Profile</a></li>
-                    <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i> Settings</a></li>
+                    <li><a class="dropdown-item" href="#"><i class="fas fa-user me-2"></i> Profil</a></li>
+                    <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i> Pengaturan</a></li>
                     <li><hr class="dropdown-divider"></li>
                     <li>
                         <a class="dropdown-item" href="{{ route('logout') }}"
                            onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                            <i class="fas fa-sign-out-alt me-2"></i> Logout
+                            <i class="fas fa-sign-out-alt me-2"></i> Keluar
                         </a>
                         <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
                             @csrf
@@ -94,6 +167,23 @@
     .sidebar .nav-link.active {
         background-color: #0d6efd;
         font-weight: 500;
+    }
+
+    .sidebar .dropdown-group .collapse {
+        margin-top: 0.25rem;
+    }
+
+    .sidebar .dropdown-group .nav-link.text-white {
+        font-size: 0.9rem;
+        padding: 0.5rem 1rem;
+    }
+
+    .sidebar .dropdown-group .nav-link.text-white:hover {
+        background-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .sidebar .dropdown-group .nav-link.text-white.active {
+        background-color: rgba(13, 110, 253, 0.7);
     }
 
     @media (max-width: 768px) {
