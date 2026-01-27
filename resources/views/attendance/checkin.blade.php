@@ -288,8 +288,18 @@
 
             const { latitude, longitude } = position.coords;
 
-            // Show modal untuk input alasan (jika telat)
-            openReasonModal(latitude, longitude);
+            // Cek apakah user telat atau tidak
+            const now = new Date();
+            const currentTime = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+            const lateAfterTime = '{{ $lateAfterTime }}'; // Dari database setting
+
+            if (currentTime > lateAfterTime) {
+                // User telat - tampilkan modal alasan
+                openReasonModal(latitude, longitude);
+            } else {
+                // User hadir - langsung proses tanpa modal
+                submitCheckin(latitude, longitude, null);
+            }
 
         }, error => {
             clearTimeout(locationTimeout);
@@ -318,7 +328,7 @@
 
     function openReasonModal(latitude, longitude) {
         Swal.fire({
-            title: 'Masukkan Alasan (Jika Telat)',
+            title: 'Masukkan Alasan Keterlambatan',
             input: 'textarea',
             inputPlaceholder: 'Alasan keterlambatan (opsional, bisa dikosongkan)',
             inputAttributes: {
@@ -330,7 +340,8 @@
             cancelButtonText: 'Batal',
             allowOutsideClick: false
         }).then((result) => {
-            if (result.isConfirmed || result.isDismissed) {
+            // Hanya proses jika user klik CONFIRM, jangan jika cancel/batal
+            if (result.isConfirmed) {
                 const reason = result.value || null;
                 submitCheckin(latitude, longitude, reason);
             }

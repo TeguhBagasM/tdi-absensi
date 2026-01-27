@@ -94,8 +94,12 @@
                     </a>
                     <div class="collapse" id="attendanceMenu">
                         <nav class="nav flex-column ms-3">
+                            <a href="{{ route('admin.attendance.records') }}"
+                               class="nav-link text-white {{ request()->routeIs('admin.attendance.records') ? 'active' : '' }}">
+                                <i class="fas fa-list me-2"></i> Data Presensi
+                            </a>
                             <a href="{{ route('admin.attendance.settings') }}"
-                               class="nav-link text-white">
+                               class="nav-link text-white {{ request()->routeIs('admin.attendance.settings') ? 'active' : '' }}">
                                 <i class="fas fa-sliders-h me-2"></i> Pengaturan
                             </a>
                         </nav>

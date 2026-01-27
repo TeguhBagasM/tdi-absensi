@@ -35,6 +35,9 @@ Route::middleware(['isAdmin'])->group(function () {
     Route::get('/admin/attendance/settings', [AttendanceSettingController::class, 'index'])->name('admin.attendance.settings');
     Route::post('/admin/attendance/settings', [AttendanceSettingController::class, 'update'])->name('admin.attendance.settings.update');
     Route::get('/admin/attendance/settings/get-all', [AttendanceSettingController::class, 'getAll'])->name('admin.attendance.settings.all');
+
+    // Attendance Records
+    Route::get('/admin/attendance/records', [AttendanceSettingController::class, 'records'])->name('admin.attendance.records');
 });
 
 // Attendance Routes (Peserta Magang)

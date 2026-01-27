@@ -23,8 +23,9 @@ class AttendanceController extends Controller
     {
         $geofence = GeofencingService::getOfficeGeofence();
         $todayAttendance = AttendanceRecord::forUserToday(auth()->id())->first();
+        $lateAfterTime = AttendanceSetting::getValue('late_after_time', '09:10');
 
-        return view('attendance.checkin', compact('geofence', 'todayAttendance'));
+        return view('attendance.checkin', compact('geofence', 'todayAttendance', 'lateAfterTime'));
     }
 
     /**

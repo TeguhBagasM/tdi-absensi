@@ -55,8 +55,8 @@
                                 <small class="text-muted">Waktu standar karyawan checkout</small>
                             </div>
 
-                            <button type="button" class="btn btn-primary btn-sm" onclick="saveSetting('checkin_start_time', 'time')">
-                                <i class="fas fa-save me-1"></i> Simpan Pengaturan Waktu
+                            <button type="button" class="btn btn-primary btn-sm" onclick="saveAllTimeSettings()">
+                                <i class="fas fa-save me-1"></i> Simpan Semua Pengaturan Waktu
                             </button>
                         </div>
                     </div>
@@ -164,6 +164,84 @@
 </div>
 
 <script>
+    function saveAllTimeSettings() {
+        const timeSettings = [
+            { key: 'checkin_start_time', value: document.getElementById('checkin_start_time').value },
+            { key: 'late_after_time', value: document.getElementById('late_after_time').value },
+            { key: 'checkout_time', value: document.getElementById('checkout_time').value }
+        ];
+
+        // Validasi input tidak kosong
+        for (let setting of timeSettings) {
+            if (!setting.value) {
+                Swal.fire({
+                    title: 'Error!',
+                    text: `Pengaturan ${setting.key} tidak boleh kosong`,
+                    icon: 'error'
+                });
+                return;
+            }
+        }
+
+        // Show loading
+        Swal.fire({
+            title: 'Menyimpan...',
+            text: 'Menyimpan 3 pengaturan waktu...',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        // Save semua setting satu per satu
+        let promises = timeSettings.map(setting => {
+            return fetch('{{ route('admin.attendance.settings.update') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
+                body: JSON.stringify({
+                    setting_key: setting.key,
+                    setting_value: setting.value,
+                    data_type: 'time'
+                })
+            }).then(response => response.json());
+        });
+
+        Promise.all(promises)
+            .then(results => {
+                let allSuccess = results.every(data => data.success);
+
+                if (allSuccess) {
+                    Swal.fire({
+                        title: 'Berhasil!',
+                        html: `Semua pengaturan waktu telah disimpan:<br/>
+                               - Jam Check-in: ${timeSettings[0].value}<br/>
+                               - Jam Telat: ${timeSettings[1].value}<br/>
+                               - Jam Checkout: ${timeSettings[2].value}`,
+                        icon: 'success',
+                        confirmButtonColor: '#0d6efd'
+                    });
+                } else {
+                    let errors = results.filter(data => !data.success).map(data => data.message).join('<br/>');
+                    Swal.fire({
+                        title: 'Sebagian Gagal!',
+                        html: errors,
+                        icon: 'warning'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'Terjadi kesalahan saat menyimpan pengaturan.',
+                    icon: 'error'
+                });
+            });
+    }
+
     function saveSetting(settingKey, dataType) {
         let value;
 
