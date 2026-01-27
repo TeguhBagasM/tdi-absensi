@@ -74,43 +74,81 @@
                                     </span>
                                 @endif
                             </a>
+                            <a href="{{ route('admin.attendance.approvals') }}"
+                               class="nav-link text-white position-relative">
+                                <i class="fas fa-file-check me-2"></i> Persetujuan Presensi
+                                @php
+                                    $attendancePendingCount = \App\Models\AttendanceRecord::where('approval_status', 'pending')->count();
+                                @endphp
+                                @if($attendancePendingCount > 0)
+                                    <span class="position-absolute start-100 top-50 translate-middle badge rounded-pill bg-warning" style="font-size: 0.65rem;">
+                                        {{ $attendancePendingCount }}
+                                    </span>
+                                @endif
+                            </a>
+                        </nav>
+                    </div>
+                </div>
+
+                <!-- Presensi Management -->
+                <div class="nav-item dropdown-group">
+                    <a class="nav-link text-white d-flex justify-content-between align-items-center"
+                       data-bs-toggle="collapse"
+                       href="#attendanceMenu"
+                       role="button"
+                       aria-expanded="false"
+                       aria-controls="attendanceMenu">
+                        <span>
+                            <i class="fas fa-calendar-check me-2"></i> Presensi
+                        </span>
+                        <i class="fas fa-chevron-down ms-auto"></i>
+                    </a>
+                    <div class="collapse" id="attendanceMenu">
+                        <nav class="nav flex-column ms-3">
+                            <a href="{{ route('admin.attendance.settings') }}"
+                               class="nav-link text-white">
+                                <i class="fas fa-sliders-h me-2"></i> Pengaturan
+                            </a>
                         </nav>
                     </div>
                 </div>
 
                 <!-- Lainnya Dropdown -->
-                <div class="nav-item dropdown-group">
-                    <a class="nav-link text-white d-flex justify-content-between align-items-center"
-                       data-bs-toggle="collapse"
-                       href="#otherMenu"
-                       role="button"
-                       aria-expanded="false"
-                       aria-controls="otherMenu">
-                        <span>
-                            <i class="fas fa-cogs me-2"></i> Lainnya
-                        </span>
-                        <i class="fas fa-chevron-down ms-auto"></i>
-                    </a>
-                    <div class="collapse" id="otherMenu">
-                        <nav class="nav flex-column ms-3">
-                            <a href="#" class="nav-link text-white">
-                                <i class="fas fa-calendar-check me-2"></i> Kehadiran
-                            </a>
-                            <a href="#" class="nav-link text-white">
-                                <i class="fas fa-file-pdf me-2"></i> Laporan
-                            </a>
-                        </nav>
-                    </div>
-                </div>
+                <!-- Removed - Attendance menu moved to proper sections -->
+
             @else
                 <!-- User Menu -->
                 <a href="{{ route('home') }}"
                    class="nav-link text-white {{ request()->routeIs('home') ? 'active' : '' }}">
                     <i class="fas fa-home me-2"></i> Beranda
                 </a>
-                <a href="#" class="nav-link text-white">
-                    <i class="fas fa-calendar-check me-2"></i> Kehadiran Saya
-                </a>
+
+                <!-- Presensi User -->
+                <div class="nav-item dropdown-group">
+                    <a class="nav-link text-white d-flex justify-content-between align-items-center"
+                       data-bs-toggle="collapse"
+                       href="#userAttendanceMenu"
+                       role="button"
+                       aria-expanded="{{ request()->routeIs('attendance.*') ? 'true' : 'false' }}"
+                       aria-controls="userAttendanceMenu">
+                        <span>
+                            <i class="fas fa-calendar-check me-2"></i> Presensi
+                        </span>
+                        <i class="fas fa-chevron-down ms-auto"></i>
+                    </a>
+                    <div class="collapse {{ request()->routeIs('attendance.*') ? 'show' : '' }}" id="userAttendanceMenu">
+                        <nav class="nav flex-column ms-3">
+                            <a href="{{ route('attendance.checkin') }}"
+                               class="nav-link text-white {{ request()->routeIs('attendance.checkin') ? 'active' : '' }}">
+                                <i class="fas fa-sign-in-alt me-2"></i> Check-in
+                            </a>
+                            <a href="{{ route('attendance.history') }}"
+                               class="nav-link text-white {{ request()->routeIs('attendance.history') ? 'active' : '' }}">
+                                <i class="fas fa-history me-2"></i> Riwayat
+                            </a>
+                        </nav>
+                    </div>
+                </div>
             @endif
         @endauth
     </nav>
@@ -183,7 +221,10 @@
     }
 
     .sidebar .dropdown-group .nav-link.text-white.active {
-        background-color: rgba(13, 110, 253, 0.7);
+        background-color: rgba(255, 255, 255, 0.25);
+        font-weight: 600;
+        border-left: 3px solid #fff;
+        padding-left: calc(1rem - 3px);
     }
 
     @media (max-width: 768px) {

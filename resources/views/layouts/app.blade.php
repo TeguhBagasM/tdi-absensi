@@ -152,7 +152,7 @@
                     icon: 'success',
                     title: 'Berhasil!',
                     text: '{{ session('success') }}',
-                    timer: 3000,
+                    timer: 2000,
                     showConfirmButton: false
                 });
             @endif
@@ -162,8 +162,41 @@
                     icon: 'error',
                     title: 'Error!',
                     text: '{{ session('error') }}',
-                    timer: 3000,
+                    timer: 2000,
                     showConfirmButton: false
+                });
+            @endif
+
+            // Show validation errors
+            @if($errors->any())
+                let errorMessages = '';
+                const errors = {!! json_encode($errors->messages()) !!};
+                Object.keys(errors).forEach(field => {
+                    errorMessages += '<strong>' + field + ':</strong><br>';
+                    errors[field].forEach(message => {
+                        errorMessages += '• ' + message + '<br>';
+                    });
+                });
+
+                Swal.fire({
+                    icon: 'error',
+                    title: '
+                    !',
+                    html: errorMessages,
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    // Clear all form inputs setelah error ditampilkan
+                    document.querySelectorAll('form').forEach(form => {
+                        // Reset input values, tapi jangan reset hidden fields
+                        form.querySelectorAll('input[type="text"], input[type="email"], textarea, select').forEach(input => {
+                            // Skip jika field adalah hidden field atau CSRF token
+                            if (input.type !== 'hidden' && input.name !== '_token' && input.name !== '_method') {
+                                input.value = '';
+                                // Clear error styling
+                                input.classList.remove('is-invalid');
+                            }
+                        });
+                    });
                 });
             @endif
         });

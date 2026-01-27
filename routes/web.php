@@ -4,6 +4,9 @@ use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\DivisionController;
 use App\Http\Controllers\Admin\JobRoleController;
+use App\Http\Controllers\Admin\AttendanceApprovalController;
+use App\Http\Controllers\Admin\AttendanceSettingController;
+use App\Http\Controllers\AttendanceController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -27,8 +30,30 @@ Route::middleware(['isAdmin'])->group(function () {
     // Division & Job Role Management
     Route::resource('admin/divisions', DivisionController::class)->names('divisions')->except(['show', 'create', 'edit']);
     Route::resource('admin/job-roles', JobRoleController::class)->names('job-roles')->except(['show', 'create', 'edit']);
-    // tambahkan route admin lainnya di sini
+
+    // Attendance Management (Admin)
+    Route::get('/admin/attendance/approvals', [AttendanceApprovalController::class, 'index'])->name('admin.attendance.approvals');
+    Route::post('/admin/attendance/{record}/approve', [AttendanceApprovalController::class, 'approve'])->name('admin.attendance.approve');
+    Route::post('/admin/attendance/{record}/reject', [AttendanceApprovalController::class, 'reject'])->name('admin.attendance.reject');
+    Route::get('/admin/attendance/pending-count', [AttendanceApprovalController::class, 'getPendingCount'])->name('admin.attendance.pending-count');
+
+    // Attendance Settings
+    Route::get('/admin/attendance/settings', [AttendanceSettingController::class, 'index'])->name('admin.attendance.settings');
+    Route::post('/admin/attendance/settings', [AttendanceSettingController::class, 'update'])->name('admin.attendance.settings.update');
+    Route::get('/admin/attendance/settings/get-all', [AttendanceSettingController::class, 'getAll'])->name('admin.attendance.settings.all');
 });
+
+// Attendance Routes (Peserta Magang)
+Route::middleware(['auth', 'peserta_magang'])->group(function () {
+    Route::get('/attendance/checkin', [AttendanceController::class, 'checkin'])->name('attendance.checkin');
+    Route::post('/attendance/checkin', [AttendanceController::class, 'storeCheckin'])->name('attendance.store-checkin');
+    Route::post('/attendance/checkout', [AttendanceController::class, 'storeCheckout'])->name('attendance.store-checkout');
+    Route::get('/attendance/manual', [AttendanceController::class, 'manualCheckin'])->name('attendance.manual');
+    Route::post('/attendance/manual', [AttendanceController::class, 'storeManualCheckin'])->name('attendance.store-manual');
+    Route::get('/attendance/history', [AttendanceController::class, 'history'])->name('attendance.history');
+    Route::get('/attendance/today-status', [AttendanceController::class, 'getTodayStatus'])->name('attendance.today-status');
+});
+
 
 // User Routes
 Route::middleware(['auth'])->group(function () {

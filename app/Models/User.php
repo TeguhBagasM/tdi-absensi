@@ -8,6 +8,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use App\Models\Division;
 use App\Models\JobRole;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class User extends Authenticatable
 {
@@ -70,6 +71,16 @@ class User extends Authenticatable
     public function jobRole()
     {
         return $this->belongsTo(JobRole::class);
+    }
+
+    public function attendanceRecords(): HasMany
+    {
+        return $this->hasMany(AttendanceRecord::class);
+    }
+
+    public function wfhRecords(): HasMany
+    {
+        return $this->hasMany(WfhRecord::class);
     }
 
     // Helper method untuk cek apakah user adalah admin
