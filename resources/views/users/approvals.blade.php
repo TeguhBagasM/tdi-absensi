@@ -1,7 +1,9 @@
 @extends('layouts.app')
 
+@section('page-title', 'Persetujuan User')
+
 @section('content')
-<div class="container">
+<div class="container-fluid">
     <div class="row justify-content-center">
         <div class="col-md-12">
             <div class="card">
@@ -13,13 +15,6 @@
                 </div>
 
                 <div class="card-body">
-                    @if(session('success'))
-                        <div class="alert alert-success alert-dismissible fade show" role="alert">
-                            {{ session('success') }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                    @endif
-
                     @if($pendingUsers->isEmpty())
                         <div class="text-center py-4">Tidak ada user menunggu persetujuan.</div>
                     @else
@@ -45,15 +40,17 @@
                                             <td>{{ $user->created_at?->format('d/m/Y H:i') }}</td>
                                             <td>
                                                 <div class="btn-group" role="group">
-                                                    <form action="{{ route('users.approve', $user) }}" method="POST" class="d-inline">
+                                                    <form action="{{ route('users.approve', $user) }}" method="POST" class="d-inline"
+                                                          data-confirm-delete="Setujui user ini?">
                                                         @csrf
-                                                        <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Setujui user ini?')">
+                                                        <button type="submit" class="btn btn-sm btn-success">
                                                             <i class="fas fa-check"></i> Approve
                                                         </button>
                                                     </form>
-                                                    <form action="{{ route('users.reject', $user) }}" method="POST" class="d-inline">
+                                                    <form action="{{ route('users.reject', $user) }}" method="POST" class="d-inline"
+                                                          data-confirm-delete="Tolak dan hapus user {{ $user->full_name ?? $user->name }}?">
                                                         @csrf
-                                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Tolak dan hapus user ini?')">
+                                                        <button type="submit" class="btn btn-sm btn-danger">
                                                             <i class="fas fa-times"></i> Tolak
                                                         </button>
                                                     </form>

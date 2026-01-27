@@ -1,7 +1,9 @@
 @extends('layouts.app')
 
+@section('page-title', 'Manajemen Users')
+
 @section('content')
-<div class="container">
+<div class="container-fluid">
     <div class="row justify-content-center">
         <div class="col-md-12">
             <div class="card">
@@ -23,20 +25,6 @@
                 </div>
 
                 <div class="card-body">
-                    @if(session('success'))
-                        <div class="alert alert-success alert-dismissible fade show" role="alert">
-                            {{ session('success') }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                    @endif
-
-                    @if(session('error'))
-                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            {{ session('error') }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                    @endif
-
                     <div class="table-responsive">
                         <table class="table table-striped table-hover">
                             <thead class="table-dark">
@@ -70,11 +58,11 @@
                                                 <i class="fas fa-edit"></i> Edit
                                             </a>
                                             @if($user->id !== auth()->id())
-                                                <form action="{{ route('users.destroy', $user) }}" method="POST" class="d-inline">
+                                                <form action="{{ route('users.destroy', $user) }}" method="POST" class="d-inline"
+                                                      data-confirm-delete="Yakin ingin menghapus user {{ $user->name }}?">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit" class="btn btn-sm btn-danger"
-                                                            onclick="return confirm('Yakin ingin menghapus user {{ $user->name }}?')">
+                                                    <button type="submit" class="btn btn-sm btn-danger">
                                                         <i class="fas fa-trash"></i> Hapus
                                                     </button>
                                                 </form>
