@@ -89,9 +89,21 @@
             body: formData
         })
         .then(response => {
-            if (response.status === 422) {
+            // Cek apakah response OK (200-299)
+            if (!response.ok) {
                 return response.json().then(data => {
-                    throw { type: 'validation', data };
+                    throw {
+                        type: response.status === 422 ? 'validation' : 'error',
+                        data: data,
+                        status: response.status
+                    };
+                }).catch(err => {
+                    // Jika gagal parse JSON, throw error umum
+                    if (err.type) throw err;
+                    throw {
+                        type: 'error',
+                        message: `Server error: ${response.status}`
+                    };
                 });
             }
             return response.json();
@@ -100,7 +112,7 @@
             Swal.fire({
                 icon: 'success',
                 title: 'Sukses!',
-                text: data.message,
+                text: data.message || 'Manual check-in berhasil!',
                 timer: 2000
             }).then(() => {
                 location.reload();
@@ -110,27 +122,38 @@
             submitBtn.disabled = false;
             submitBtn.innerHTML = originalText;
 
+            console.error('Manual check-in error:', error);
+
             if (error.type === 'validation') {
                 const alertContainer = document.querySelector('#manualCheckinForm .alert-container');
                 alertContainer.innerHTML = '';
 
-                const errors = error.data.errors;
-                Object.keys(errors).forEach(field => {
-                    errors[field].forEach(message => {
-                        const alertHtml = `
-                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                                <strong>${field}:</strong> ${message}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                            </div>
-                        `;
-                        alertContainer.innerHTML += alertHtml;
+                if (error.data && error.data.errors) {
+                    const errors = error.data.errors;
+                    Object.keys(errors).forEach(field => {
+                        errors[field].forEach(message => {
+                            const alertHtml = `
+                                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                    <strong>${field}:</strong> ${message}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            `;
+                            alertContainer.innerHTML += alertHtml;
+                        });
                     });
-                });
+                } else {
+                    alertContainer.innerHTML = `
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            ${error.data?.message || 'Validasi gagal'}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    `;
+                }
             } else {
                 Swal.fire({
                     icon: 'error',
                     title: 'Gagal!',
-                    text: error.message || 'Terjadi kesalahan'
+                    text: error.data?.message || error.message || 'Terjadi kesalahan saat memproses request'
                 });
             }
         });

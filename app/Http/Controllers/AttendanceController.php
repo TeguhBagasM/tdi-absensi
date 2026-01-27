@@ -69,34 +69,55 @@ class AttendanceController extends Controller
      */
     public function storeManualCheckin(Request $request)
     {
-        $rules = [
-            'status' => 'required|in:izin,sakit,wfh',
-            'reason' => 'required|string|max:1000',
-        ];
+        try {
+            $rules = [
+                'status' => 'required|in:izin,sakit,wfh',
+                'reason' => 'required|string|max:1000',
+            ];
 
-        if (in_array($request->status, ['izin', 'sakit'])) {
-            $rules['file'] = 'required|file|mimes:pdf,jpg,jpeg,png|max:5120'; // max 5MB
+            if (in_array($request->status, ['izin', 'sakit'])) {
+                $rules['file'] = 'required|file|mimes:pdf,jpg,jpeg,png|max:5120'; // max 5MB
+            }
+
+            $request->validate($rules);
+
+            $filePath = null;
+            if ($request->hasFile('file')) {
+                $filePath = $request->file('file')->store('attendance-files', 'public');
+            }
+
+            \Log::info('Manual check-in request', [
+                'user_id' => auth()->id(),
+                'status' => $request->status,
+                'has_file' => $request->hasFile('file'),
+                'file_path' => $filePath
+            ]);
+
+            $result = AttendanceService::manualCheckin(
+                auth()->id(),
+                $request->status,
+                $request->reason,
+                $filePath
+            );
+
+            \Log::info('Manual check-in result', $result);
+
+            if ($result['success']) {
+                return response()->json($result, 200);
+            }
+
+            return response()->json($result, 422);
+        } catch (\Exception $e) {
+            \Log::error('Manual check-in error', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
         }
-
-        $request->validate($rules);
-
-        $filePath = null;
-        if ($request->hasFile('file')) {
-            $filePath = $request->file('file')->store('attendance-files', 'public');
-        }
-
-        $result = AttendanceService::manualCheckin(
-            auth()->id(),
-            $request->status,
-            $request->reason,
-            $filePath
-        );
-
-        if ($result['success']) {
-            return response()->json($result, 200);
-        }
-
-        return response()->json($result, 422);
     }
 
     /**

@@ -45,14 +45,21 @@ class WfhRecord extends Model
     {
         $weekStart = now()->startOfWeek();
 
-        return static::updateOrCreate(
-            [
+        $record = static::where('user_id', $userId)
+            ->where('week_starting', $weekStart->toDateString())
+            ->first();
+
+        if ($record) {
+            // Jika record sudah ada, increment
+            $record->increment('count');
+            return $record;
+        } else {
+            // Jika belum ada, create dengan count = 1
+            return static::create([
                 'user_id' => $userId,
                 'week_starting' => $weekStart->toDateString(),
-            ],
-            [
-                'count' => \DB::raw('count + 1'),
-            ]
-        );
+                'count' => 1,
+            ]);
+        }
     }
 }
