@@ -63,10 +63,14 @@ class RegisterController extends Controller
      */
     protected function create(array $data)
     {
+        // Ambil role 'user' dari database
+        $userRole = \App\Models\Role::where('name', 'user')->first();
+
         return User::create([
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
+            'role_id' => $userRole ? $userRole->id : 2,
         ]);
     }
 }
