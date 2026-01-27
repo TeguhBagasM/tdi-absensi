@@ -17,7 +17,11 @@ Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name
 // Admin Routes
 Route::middleware(['isAdmin'])->group(function () {
     Route::get('/admin', [AdminController::class, 'index'])->name('admin.dashboard');
-    Route::resource('admin/users', UserController::class);
+    Route::resource('admin/users', UserController::class)->names('users');
+
+    Route::get('/admin/users/approvals', [UserController::class, 'approvals'])->name('users.approvals');
+    Route::post('/admin/users/{user}/approve', [UserController::class, 'approve'])->name('users.approve');
+    Route::post('/admin/users/{user}/reject', [UserController::class, 'reject'])->name('users.reject');
     // tambahkan route admin lainnya di sini
 });
 

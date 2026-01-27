@@ -5,8 +5,12 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Foundation\Auth\RegistersUsers;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use App\Models\Division;
+use App\Models\JobRole;
+use App\Models\Role;
 
 class RegisterController extends Controller
 {
@@ -49,9 +53,13 @@ class RegisterController extends Controller
     protected function validator(array $data)
     {
         return Validator::make($data, [
-            'name' => ['required', 'string', 'max:255'],
+            'full_name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'student_id' => ['required', 'string', 'max:100'],
+            'campus' => ['required', 'string', 'max:255'],
+            'division_id' => ['required', 'exists:divisions,id'],
+            'job_role_id' => ['required', 'exists:job_roles,id'],
         ]);
     }
 
@@ -63,14 +71,35 @@ class RegisterController extends Controller
      */
     protected function create(array $data)
     {
-        // Ambil role 'user' dari database
-        $userRole = \App\Models\Role::where('name', 'user')->first();
+        $participantRole = Role::where('name', 'peserta_magang')->first();
 
         return User::create([
-            'name' => $data['name'],
+            'name' => $data['full_name'],
+            'full_name' => $data['full_name'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
-            'role_id' => $userRole ? $userRole->id : 2,
+            'role_id' => $participantRole ? $participantRole->id : 2,
+            'student_id' => $data['student_id'] ?? null,
+            'campus' => $data['campus'] ?? null,
+            'division_id' => $data['division_id'] ?? null,
+            'job_role_id' => $data['job_role_id'] ?? null,
+            'is_approved' => false,
         ]);
+    }
+
+    public function showRegistrationForm()
+    {
+        $divisions = Division::orderBy('name')->get();
+        $jobRoles = JobRole::orderBy('name')->get();
+
+        return view('auth.register', compact('divisions', 'jobRoles'));
+    }
+
+    protected function registered(Request $request, $user)
+    {
+        $this->guard()->logout();
+
+        return redirect()->route('login')
+            ->with('status', 'Pendaftaran berhasil. Menunggu approval admin sebelum bisa login.');
     }
 }

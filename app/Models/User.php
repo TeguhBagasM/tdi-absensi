@@ -6,6 +6,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use App\Models\Division;
+use App\Models\JobRole;
 
 class User extends Authenticatable
 {
@@ -19,9 +21,15 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
+        'full_name',
         'email',
         'password',
         'role_id',
+        'student_id',
+        'campus',
+        'division_id',
+        'job_role_id',
+        'is_approved',
     ];
 
     /**
@@ -44,6 +52,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_approved' => 'boolean',
         ];
     }
 
@@ -51,6 +60,16 @@ class User extends Authenticatable
     public function role()
     {
         return $this->belongsTo(Role::class);
+    }
+
+    public function division()
+    {
+        return $this->belongsTo(Division::class);
+    }
+
+    public function jobRole()
+    {
+        return $this->belongsTo(JobRole::class);
     }
 
     // Helper method untuk cek apakah user adalah admin

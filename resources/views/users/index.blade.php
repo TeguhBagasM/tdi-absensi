@@ -7,9 +7,19 @@
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h4 class="mb-0">Manajemen Users</h4>
-                    <a href="{{ route('users.create') }}" class="btn btn-primary">
-                        <i class="fas fa-plus"></i> Tambah User
-                    </a>
+                            <div class="d-flex gap-2">
+                                <a href="{{ route('users.approvals') }}" class="btn btn-outline-secondary position-relative">
+                                    <i class="fas fa-user-check"></i> Persetujuan User
+                                    @if(isset($pendingCount) && $pendingCount > 0)
+                                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                            {{ $pendingCount }}
+                                        </span>
+                                    @endif
+                                </a>
+                                <a href="{{ route('users.create') }}" class="btn btn-primary">
+                                    <i class="fas fa-plus"></i> Tambah User
+                                </a>
+                            </div>
                 </div>
 
                 <div class="card-body">

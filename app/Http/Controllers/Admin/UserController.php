@@ -14,7 +14,18 @@ class UserController extends Controller
     public function index()
     {
         $users = User::with('role')->paginate(10);
-        return view('users.index', compact('users'));
+        $pendingCount = User::where('is_approved', false)->count();
+
+        return view('users.index', compact('users', 'pendingCount'));
+    }
+
+    public function approvals()
+    {
+        $pendingUsers = User::with('role', 'division', 'jobRole')
+            ->where('is_approved', false)
+            ->paginate(10);
+
+        return view('users.approvals', compact('pendingUsers'));
     }
 
     public function create()
@@ -111,5 +122,19 @@ class UserController extends Controller
     {
         $user->delete();
         return redirect()->route('users.index')->with('success', 'User berhasil dihapus');
+    }
+
+    public function approve(User $user)
+    {
+        $user->update(['is_approved' => true]);
+
+        return redirect()->back()->with('success', 'User disetujui.');
+    }
+
+    public function reject(User $user)
+    {
+        $user->delete();
+
+        return redirect()->back()->with('success', 'User ditolak dan dihapus.');
     }
 }
