@@ -12,13 +12,13 @@ class GeofencingService
     {
         $earthRadiusMeters = 6371000; // Earth radius in meters
 
-        $latFrom = deg2rad($lat1);
-        $lonFrom = deg2rad($lon1);
-        $latTo = deg2rad($lat2);
-        $lonTo = deg2rad($lon2);
+        $latFrom = deg2rad($lat1);           // φ1
+        $lonFrom = deg2rad($lon1);           // λ1
+        $latTo = deg2rad($lat2);             // φ2
+        $lonTo = deg2rad($lon2);             // λ2
 
-        $latDelta = $latTo - $latFrom;
-        $lonDelta = $lonTo - $lonFrom;
+        $latDelta = $latTo - $latFrom;       // Δφ
+        $lonDelta = $lonTo - $lonFrom;       // Δλ
 
         $angle = 2 * asin(sqrt(pow(sin($latDelta / 2), 2) +
             cos($latFrom) * cos($latTo) * pow(sin($lonDelta / 2), 2)));
