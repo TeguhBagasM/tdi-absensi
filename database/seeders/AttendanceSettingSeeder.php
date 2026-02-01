@@ -34,24 +34,6 @@ class AttendanceSettingSeeder extends Seeder
                 'description' => 'Maksimal WFH per minggu',
                 'data_type' => 'integer',
             ],
-            [
-                'setting_key' => 'office_latitude',
-                'setting_value' => '-6.9248406',
-                'description' => 'Latitude koordinat kantor',
-                'data_type' => 'decimal',
-            ],
-            [
-                'setting_key' => 'office_longitude',
-                'setting_value' => '107.6586951',
-                'description' => 'Longitude koordinat kantor',
-                'data_type' => 'decimal',
-            ],
-            [
-                'setting_key' => 'geofence_radius_meters',
-                'setting_value' => '400',
-                'description' => 'Radius geofence kantor dalam meter',
-                'data_type' => 'integer',
-            ],
         ];
 
         foreach ($settings as $setting) {
