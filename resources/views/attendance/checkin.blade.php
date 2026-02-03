@@ -100,7 +100,7 @@
             </div>
 
             <!-- Attendance Summary Card -->
-            <div class="card mt-3">
+            {{-- <div class="card mt-3">
                 <div class="card-header">
                     <h5 class="mb-0">Ringkasan Bulan Ini</h5>
                 </div>
@@ -109,7 +109,7 @@
                         <small class="text-muted">Loading...</small>
                     </div>
                 </div>
-            </div>
+            </div> --}}
         </div>
     </div>
 </div>

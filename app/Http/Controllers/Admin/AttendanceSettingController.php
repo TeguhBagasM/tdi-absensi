@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\AttendanceSetting;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class AttendanceSettingController extends Controller
 {
@@ -37,7 +38,7 @@ class AttendanceSettingController extends Controller
         $data_type = $request->input('data_type');
 
         // Log request untuk debugging
-        \Log::info('Update Setting Request:', [
+        Log::info('Update Setting Request:', [
             'key' => $setting_key,
             'value' => $setting_value,
             'type' => $data_type,
