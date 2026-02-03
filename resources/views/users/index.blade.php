@@ -50,20 +50,20 @@
                                     </td>
                                     <td>{{ $user->created_at->format('d/m/Y H:i') }}</td>
                                     <td>
-                                        <div class="btn-group" role="group">
-                                            <a href="{{ route('users.show', $user) }}" class="btn btn-sm btn-info">
-                                                <i class="fas fa-eye"></i> Detail
+                                        <div class="d-flex gap-2">
+                                            <a href="{{ route('users.show', $user) }}" class="btn btn-sm" style="background: transparent; color: #3b82f6; border: 1px solid #bfdbfe; border-radius: 6px; padding: 6px 8px;" title="Lihat Detail">
+                                                <i class="fas fa-eye"></i>
                                             </a>
-                                            <a href="{{ route('users.edit', $user) }}" class="btn btn-sm btn-warning">
-                                                <i class="fas fa-edit"></i> Edit
+                                            <a href="{{ route('users.edit', $user) }}" class="btn btn-sm" style="background: transparent; color: #f59e0b; border: 1px solid #fef3c7; border-radius: 6px; padding: 6px 8px;" title="Edit">
+                                                <i class="fas fa-edit"></i>
                                             </a>
                                             @if($user->id !== auth()->id())
                                                 <form action="{{ route('users.destroy', $user) }}" method="POST" class="d-inline"
                                                       data-confirm-delete="Yakin ingin menghapus pengguna {{ $user->name }}?">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit" class="btn btn-sm btn-danger">
-                                                        <i class="fas fa-trash"></i> Hapus
+                                                    <button type="submit" class="btn btn-sm" style="background: transparent; color: #ef4444; border: 1px solid #fecaca; border-radius: 6px; padding: 6px 8px;" title="Hapus">
+                                                        <i class="fas fa-trash"></i>
                                                     </button>
                                                 </form>
                                             @endif

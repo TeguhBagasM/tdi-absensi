@@ -34,21 +34,23 @@
                                         <span class="badge bg-info">{{ $jobRole->users_count }} pengguna</span>
                                     </td>
                                     <td class="text-center">
-                                        <button type="button" class="btn btn-sm btn-warning"
-                                                data-bs-toggle="modal"
-                                                data-bs-target="#editJobRoleModal{{ $jobRole->id }}">
-                                            <i class="fas fa-edit"></i> Edit
-                                        </button>
-                                        <form action="{{ route('job-roles.destroy', $jobRole) }}"
-                                              method="POST"
-                                              class="d-inline"
-                                              data-confirm-delete="Yakin ingin menghapus job role {{ $jobRole->name }}?">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-danger">
-                                                <i class="fas fa-trash"></i> Hapus
+                                        <div class="d-flex gap-2 justify-content-center">
+                                            <button type="button" class="btn btn-sm" style="background: transparent; color: #f59e0b; border: 1px solid #fef3c7; border-radius: 6px; padding: 6px 8px;" title="Edit"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#editJobRoleModal{{ $jobRole->id }}">
+                                                <i class="fas fa-edit"></i>
                                             </button>
-                                        </form>
+                                            <form action="{{ route('job-roles.destroy', $jobRole) }}"
+                                                  method="POST"
+                                                  class="d-inline"
+                                                  data-confirm-delete="Yakin ingin menghapus job role {{ $jobRole->name }}?">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-sm" style="background: transparent; color: #ef4444; border: 1px solid #fecaca; border-radius: 6px; padding: 6px 8px;" title="Hapus">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
                                     </td>
                                 </tr>
 
