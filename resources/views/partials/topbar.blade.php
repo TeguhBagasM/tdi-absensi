@@ -7,9 +7,9 @@
             <h5 class="d-inline-block mb-0 ms-2">@yield('page-title', 'Dashboard')</h5>
         </div>
         <div class="d-flex align-items-center gap-3">
-            <span class="text-muted small">{{ now()->format('d M Y') }}</span>
+            {{-- <span class="text-muted small">{{ now()->format('d M Y') }}</span> --}}
             @auth
-                <span class="badge bg-{{ Auth::user()->isAdmin() ? 'danger' : 'primary' }}">
+                <span style="background: transparent; color: {{ Auth::user()->isAdmin() ? '#ef4444' : '#3b82f6' }}; padding: 4px 8px; border-radius: 4px; font-size: 0.875rem; font-weight: 500; border: 1px solid {{ Auth::user()->isAdmin() ? '#fecaca' : '#bfdbfe' }};">
                     {{ str_replace('_', ' ', Auth::user()->role->name ?? 'User') }}
                 </span>
             @endauth
